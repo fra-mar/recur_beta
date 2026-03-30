@@ -31,7 +31,7 @@ else:
 df_scenarios = pd.read_csv('scenarios.csv')
 
 # Follow up after SUG administration
-follup = 60 * 3 # 60min * n hours. Units: minutes
+follup = 3 # hours follow up after SUG administration
 
 # Select the scenario numbered when the script was called
 s = df_scenarios.iloc[scenN,:]
