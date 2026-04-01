@@ -25,14 +25,17 @@ def rnorm(mean, sd):
 
 
 def buildParams(nSub, durInf):
-    CR = 119
+    
     for i in range(nSub):
       AGE    = np.random.normal(69,10)
+      CR     = 80 if AGE > 60 else 100
       BW     = np.random.normal(79,10)
       RAC   = np.random.randint(0,3)
       RAC   = 'Asian' if RAC==0 else 'nonAsian' # 33% will be Asian
-      SEV    = np.random.randint(0,2,1).astype('bool')[0] #Sevo True/False
-      i_ROC  = np.random.randint(6,13)*5/100 #for i_ROC 0.3-0.6 by .05 mgKgH
+      #SEV    = np.random.randint(0,2,1).astype('bool')[0] #Sevo True/False
+      SEV = True
+      #i_ROC  = np.random.randint(6,19)*5/100 #for i_ROC 0.3-0.9 by .05 mgKgH
+      i_ROC  = np.random.randint(3,10)/10 #for i_ROC 0.3-0.9 by .1 mgKgH
       d0ROC  = 0.6  * BW            #induction dose ROC in mg (mgKg-1 *Kg)
       d0ROC  = d0ROC * rocBromide2roc * roc2microM #conversion to micromoles
       infROC = i_ROC * BW / 60                           # ROC mg per minute
