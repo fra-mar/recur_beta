@@ -4,78 +4,72 @@ library('dplyr')
 roc2microM = 1.887505
 sug2microM = .499451
 if (exists('adf')){rm(adf)}
-if (exists('params')){rm(params)}
 
 # Check if data exists, otherwise create it
-dataSourceDir = [yourPROJECTdirectory]
+dataSourceDir = '~/Code/recur/'
+
 
 if (!('mydata.csv' %in% list.files())) {
   
   print('Datafile doesnt exist. Creating it')
-  targetScen = c('G', 'H', 'I' , 'J', 'K', 'L') # Scenarios to be joined and analyzed
   
   setwd(dataSourceDir)
-  scenarios = tibble(read.csv('scenarios.csv'))
+  #scenarios = tibble(read.csv('scenarios.csv'))
   
-  for (letter in targetScen){
-    scenDsug = scenarios[scenarios$sceName==letter,]$d0SUG
-    scenDsug = ifelse(scenDsug=='var','adjusted','fixed') # change for easier factoring
-    
+  for (scenario in list.dirs('simulations', recursive=FALSE)){
+   print(paste0('Working on ',scenario))
     # Read tofAnalyzer
     tdf_tofAn  = tibble(
       read.csv(
-        paste0('./simulations/scenario_',letter,'/analyzedTOF.csv'))) |>
-      select(isRNB, t90, tIniRNB, durRNB, lowestTOF ) |>
-      mutate(sug=scenDsug) 
-    
+        paste0(scenario,'/analyzedTOF.csv'))) |>
+      mutate(id = as.integer(substr(sim.id,3,8))) |>
+      select(id, spntRecover,isRNB, t90, tIniRNB, durRNB, lowestTOF )  
+ 
     # Read forRegression
     tdf_forReg = tibble(
       read.csv(
-        paste0('./simulations/scenario_',letter,'/forRegression.csv')))
-    tdf = cbind(tdf_tofAn, tdf_forReg)
-    
+        paste0(scenario,'/forRegression.csv'))) |>
+      mutate(id = as.integer(id)) |>
+      rename(c(cumROC='dROC'))
+  
     # Read params
     tdf_params  = tibble(
       read.csv(
-        paste0('./simulations/scenario_',letter,'/params.csv'))) |>
-      select(!c('simId'))
-    #tdf_params = tibble(
-    #  cbind(tdf_params, tdf_tofAn |> select(isRNB, sug)))
+        paste0(scenario,'/params.csv'))) |>
+      select(!simId)
+    
+    joined = left_join(tdf_params,tdf_tofAn,by='id')
+    joined = left_join(joined, tdf_forReg, by='id') |>
+      mutate(cumROC = cumROC/BW) #cummulative ROC(microM) per Kg BW
     
     if (!(exists('adf'))){
-      adf = tdf
+      print('starting adf')
+      adf = joined
     } else {
-      adf = tibble(rbind(adf, tdf))
+      print('continuing adf')
+      mydata = tibble(rbind(adf, joined))
     }
     
-    if (!(exists('params'))){
-      params = tdf_params
-    } else {
-      params = tibble(rbind(params, tdf_params))
-    }
-  }
-
   
-  setwd('[yourPROJECTdirectory]/statAnalysis')
+  } #---------- End of for loop
   
-  mydata = tibble(cbind(tibble(adf), params)) |> 
-    mutate( #rSUGamt is rate sugammadex dose to remaining roc in A1 and A2
-            #calculated as molar ratio, that should be close to 1.
-            rSUGamt = (79 * dSUG * sug2microM)/((A1ro + A2ro)), #79kg scenG-L
-            A1ro = A1ro / roc2microM, # was imported as microM, needed mg so reader understands
-            A2ro = A2ro / roc2microM, # was imported as microM, needed mg so reader understands
-	    sug  = factor(sug, levels=c('adjusted','fixed')),
-            dROC = factor(dROC),
-            dSUG = factor(round(dSUG,2))) 
+  mydata = mydata |>
+    mutate(rSUG_remROC = dSUG/(A1ro+A2ro),  # given SUG/remainingROC
+           A1ro = A1ro / roc2microM, #ROC1 -> mg, so reader understands)
+           A2ro = A2ro / roc2microM)
   
   write.csv(mydata, 'mydata.csv', row.names = FALSE)
-} else {
-  mydata = tibble(read.csv('mydata.csv')) |> 
-	    mutate( 
-            sug  = factor(sug, levels=c('adjusted','fixed')),
-            dROC = factor(dROC),
-            dSUG = factor(round(dSUG,2))) 
+  #------------ End of if, when no gathered data exists
+
+  } else { 
+  mydata = tibble(read.csv('mydata.csv'))
 }  
+
+# Set factors
+mydata = mydata |>
+  mutate(catSUG = factor(catSUG, levels=c('adjusted','fixed')),
+         RAC = factor(RAC),
+         SEV = factor(SEV))
 
 #--------------Support functions------------------
 qtMe = function(x, probs = c(0.05, 0.5, 0.95)) {
