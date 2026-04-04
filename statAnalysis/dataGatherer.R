@@ -54,8 +54,7 @@ if (!('mydata.csv' %in% list.files())) {
   } #---------- End of for loop
   
   mydata = mydata |>
-    mutate(rSUG_remROC = dSUG/(A1ro+A2ro),  # given SUG/remainingROC
-           A1ro = A1ro / roc2microM, #ROC1 -> mg, so reader understands)
+    mutate(A1ro = A1ro / roc2microM, #ROC1 -> mg, so reader understands)
            A2ro = A2ro / roc2microM)
   
   write.csv(mydata, 'mydata.csv', row.names = FALSE)

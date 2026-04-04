@@ -18,6 +18,8 @@ from kleijnModel_251104 import model
 from paramsBuilder_251019 import buildParams
 import gc
 
+rng = np.random.default_rng(seed=1234)
+
 args = sys.argv
 if len(args) == 1:
     print('Script called without arguments for scenario number and nSubs')
@@ -57,7 +59,7 @@ for i in range(0,nSub):
     TIMELINE  = np.hstack((timeline, timeline_ + timeline[-1]))
 
     # Total dROC in micromol (already incl BW), saved for later use
-    dROC_tosave = d0ROC + infROC*durInf 
+    dROC_tosave = d0ROC + infROC*60*durInf #x60 for µmol/min->µmol/h
     
     #-----------------------------ROC phase ------------------------------------
     
@@ -130,13 +132,16 @@ for i in range(0,nSub):
         C2ro = np.hstack(( ROCperif,   ROCperif_s)).reshape(-1,1)   /pars.V2ro 
         Ceff_ro = np.hstack(( C_ROCeff,   C_ROCeff_s)).reshape(-1,1)  # Risk confusion with Ceff!!!
         TOFr = np.hstack((tofR, tofR_)).reshape(-1,1) 
+        rSUG_remROC = d0SUG / (ROCcentral[-1] + ROCperif[-1])
 
         forRegression = np.array([[int(i+1), dROC_tosave,
                                    dSUG_tosave,
                                    ROCcentral[-1],
                                    ROCcentral[-1]/pars.V1ro,
                                    ROCperif[-1],
-                                   ROCperif[-1]/pars.V2ro]])
+                                   ROCperif[-1]/pars.V2ro,
+                                   rSUG_remROC]]
+                                   )
     
     else:
         C1ro = np.hstack(   (C1ro, 
@@ -147,7 +152,7 @@ for i in range(0,nSub):
                              np.hstack(( C_ROCeff,   C_ROCeff_s)).reshape(-1,1) ))  # Risk confusion with Ceff!!!
         TOFr = np.hstack((TOFr,
                           np.hstack((tofR, tofR_)).reshape(-1,1))  )
-        
+        rSUG_remROC = d0SUG / (ROCcentral[-1] + ROCperif[-1])
         forRegression = np.vstack( (forRegression,
                                    np.array([[int(i+1), 
                                                dROC_tosave, 
@@ -155,7 +160,9 @@ for i in range(0,nSub):
                                                ROCcentral[-1],
                                                ROCcentral[-1]/pars.V1ro,
                                                ROCperif[-1],
-                                               ROCperif[-1]/pars.V2ro]]) ) )
+                                               ROCperif[-1]/pars.V2ro,
+                                               rSUG_remROC]]) )
+                                               )
           
 
   
@@ -177,7 +184,7 @@ np.savetxt(os.path.join(scenDir,'TOFr.csv'),
 np.savetxt(os.path.join(scenDir,'timeline.csv'), 
            TIMELINE, delimiter=',',header='time', comments='')
 np.savetxt(os.path.join(scenDir,'forRegression.csv'),
-           forRegression, delimiter=',', header='id,dROC,dSUG,A1ro,C1ro,A2ro,C2ro', comments='')
+           forRegression, delimiter=',', header='id,dROC,dSUG,A1ro,C1ro,A2ro,C2ro,rSUG_remROC', comments='')
 
 
 # Save params
