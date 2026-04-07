@@ -47,8 +47,9 @@ params = buildParams(nSub, df_scenarios.durInf[scenN])
 
 for i in range(0,nSub):
     # Unpack parameters for that individual
-    ids, AGE, BW, RAC, SEV, infROC, durInf, d0ROC, catSUG = params.iloc[i,0:9]
-    pars = params.iloc[i,9:]
+    ids, AGE, BW, RAC, SEV                      = params.iloc[i,0:5]
+    infROC, infROC_plan,  durInf, d0ROC, catSUG = params.iloc[i,5:10]
+    pars = params.iloc[i,10:]
     
     # Prepare a timeline
     # Two time spaces, one for ROC phase, other of SUG phase

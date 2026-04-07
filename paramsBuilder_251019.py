@@ -30,29 +30,19 @@ def buildParams(nSub, durInf):
       AGE    = np.random.normal(69,10)
       CR     = 80 if AGE > 60 else 100
       BW     = np.random.normal(79,10)
-      RAC   = np.random.randint(0,3)
-      RAC   = 'Asian' if RAC==0 else 'nonAsian' # 33% will be Asian
+      RAC    = np.random.randint(0,3)
+      RAC    = 'Asian' if RAC==0 else 'nonAsian' # 33% will be Asian
       #SEV    = np.random.randint(0,2,1).astype('bool')[0] #Sevo True/False
-      SEV = True
-      #i_ROC  = np.random.randint(6,19)*5/100 #for i_ROC 0.3-0.9 by .05 mgKgH
+      SEV   = False # Always False: True makes little sense during recovery
       i_ROC  = np.random.randint(3,10)/10 #for i_ROC 0.3-0.9 by .1 mgKgH
       d0ROC  = 0.6  * BW            #induction dose ROC in mg (mgKg-1 *Kg)
       d0ROC  = d0ROC * rocBromide2roc * roc2microM #conversion to micromoles
       infROC = i_ROC * BW / 60                           # ROC mg per minute
       infROC = infROC * rocBromide2roc * roc2microM #conversion to micromoles
+      
       # 20% cases will get SUG fixed, i.e. 200mg (1 vial) / BW
       catSUG = 'fixed' if np.random.random() <= .2 else 'adjusted'
-      #d0SUG  = bolusSUG * BW            # Reversal dose SUG in mg (mgKg-1 *Kg)
-      #d0SUG  = d0SUG * sug2microM  # Conversion mg to micromoles
-      #tSUG   = durInf                # timestamp when SUG administered (hours)
-      '''
-      forEvents = pd.DataFrame(index=[0],
-                               data={'d0ROC':d0ROC, 
-                                     'infROC':infROC, 
-                                     'durInf':durInf, 
-                                     'd0SUG':d0SUG, 
-                                     'tSUG':tSUG})
-      '''
+      
       CLage   = 1 + -0.00678 * (AGE - 43)
       tvCLro  = CLage * 0.269 *(BW/70)**0.75
       V1cr    = np.exp(-0.00143 * (CR-119))
@@ -103,7 +93,8 @@ def buildParams(nSub, durInf):
         'BW'   : BW,
         'RAC' : RAC,
         'SEV' : SEV,
-        'iROC' : i_ROC,
+        'iROC' : infROC,
+        'iROC_plan' : i_ROC,
         'durInf' : durInf,
         'd0ROC' : d0ROC,
         'catSUG' : catSUG,
@@ -133,7 +124,7 @@ def buildParams(nSub, durInf):
 
 
 if __name__ == "__main__":
-    params = buildParams(1000)
-    print(params.head(50))
+    params = buildParams(100, durInf=1)
+    print(params.head(3).T)
     print(params.describe().T)
 
