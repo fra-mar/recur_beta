@@ -126,24 +126,7 @@ for (scenName in scenDirs) {
   }else {
     parsSumup = rbind(parsSumup, pars_grp)
   }
-  
-  if (any(params$whichEv==2)){
-    w=wilcoxMe(params_sel |> select(colnames(params_sel)[2:10]), 
-             'whichEv')
-    is2 = pars_grp[pars_grp$whichEv==2,3:26]
-    is0 = pars_grp[pars_grp$whichEv==0,3:26]
-    dpars = tibble((is2 - is0)/is0) |>
-      select (colnames(pars_grp)[grep('_p50',colnames(pars_grp))])
-    diffpars = tibble(cbind(scenLetter,dpars,w)) 
-    
-    if (!exists("parsCompare")) {
-      parsCompare = diffpars 
-    }else {
-      parsCompare = rbind(parsCompare, diffpars)
-    }
-  }else{
-    scenWithNoEvents = c(scenWithNoEvents, c(scenLetter))
-  }
+
   
 } #                        End of Main Loop
 
