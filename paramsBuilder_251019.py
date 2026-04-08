@@ -32,8 +32,8 @@ def buildParams(nSub, durInf):
       BW     = np.random.normal(79,10)
       RAC    = np.random.randint(0,3)
       RAC    = 'Asian' if RAC==0 else 'nonAsian' # 33% will be Asian
-      #SEV    = np.random.randint(0,2,1).astype('bool')[0] #Sevo True/False
-      SEV   = False # Always False: True makes little sense during recovery
+      SEV    = np.random.randint(0,2,1).astype('bool')[0] #Sevo True/False
+      #SEV   = False # Always False: True makes little sense during recovery
       i_ROC  = np.random.randint(3,10)/10 #for i_ROC 0.3-0.9 by .1 mgKgH
       d0ROC  = 0.6  * BW            #induction dose ROC in mg (mgKg-1 *Kg)
       d0ROC  = d0ROC * rocBromide2roc * roc2microM #conversion to micromoles
@@ -125,6 +125,6 @@ def buildParams(nSub, durInf):
 
 if __name__ == "__main__":
     params = buildParams(100, durInf=1)
-    print(params.head(3).T)
+    print(params.head(10).T)
     print(params.describe().T)
 

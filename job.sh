@@ -25,7 +25,7 @@ for i in $(seq 0 $(($n - 2)))
 do
   echo ------------------------------
 	echo $i
-	python simulatorMain_251108.py $i 1000 # Number of simulations. If not high performace enviroment, <1500 recommended.
+	python3 simulatorMain_251108.py $i 50 # Number of simulations. If not high performace enviroment, <1500 recommended.
 	date
 done
 

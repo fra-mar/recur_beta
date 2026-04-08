@@ -1,5 +1,6 @@
 library(dplyr)
 library(ggplot2)
+library(patchwork)
 # for methodological guidance please consider
 # https://stats.oarc.ucla.edu/r/dae/logit-regression/
 setwd("~/Dropbox/Coding/Code/recur/statAnalysis")
@@ -24,7 +25,7 @@ print (exp(cbind(OR=coef(modelPat), confint(modelPat, level=.9 ))))
 # ------- Risk of RNB depending of what we do to the patient------------------
 modelWe = glm(formula="isRNB ~ 1 + catSUG + cumROC",
               family = binomial,
-              data = data_std |> mutate(cumROC = cumROC / 1.887)) #for mg/Kg
+              data = data_std ) 
 print (exp(cbind(OR=coef(modelWe), confint(modelWe, level=.9 ))))
 
 # ------- Diff ratio SUG/remROC among isRNB           ------------------
@@ -75,7 +76,7 @@ print(head(ndataPlus))
 
 gP_cumROC = ggplot(ndataPlus, aes(x = cumROC, y = PredictedProb)) + 
   geom_ribbon(aes(ymin = LL, ymax = UL, fill = catSUG), alpha = 0.2) + 
-  geom_line(aes(colour = catSUG),size = 1)
+  geom_line(aes(colour = catSUG),size = 1) 
 
 plot(gP_cumROC)
 
